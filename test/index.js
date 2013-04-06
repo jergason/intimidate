@@ -3,9 +3,23 @@ var path = require('path')
 var Retry = require('../index')
 
 describe('Retry', function() {
+  var noopKnox = {createClient: function() {}}
+
+  it('throws an error if required options are not passed in', function() {
+    assert.throws(function () {
+      var client = new Retry({})
+    })
+  })
+
+  it('does not throw an error if required options are passed in', function () {
+    assert.doesNotThrow(function() {
+      var client = new Retry({key: 1, secret: 1, bucket: 1}, noopKnox)
+    })
+  })
+
   describe('calculateBackoff', function() {
     it('returns a larger backoff for larger numbers of retries', function() {
-      var client = new Retry({}, {createClient: function() {}})
+      var client = new Retry({key: 1, secret: 1, bucket: 1}, noopKnox)
       var lessRetriesBackoff = client.calculateBackoff(1)
       var moreRetriesBackoff = client.calculateBackoff(10)
       assert(moreRetriesBackoff > lessRetriesBackoff)
@@ -39,8 +53,8 @@ describe('Retry', function() {
       }
     }
 
-    it('tries uploading to s3 until success', function(done) {
-      var client = new Retry({ backoffInterval: 1, maxRetries:4 }, mockKnox)
+    it('tries uploading to s3 until success or it gets the hose again', function(done) {
+      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, mockKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err) {
         assert.ifError(err)
         assert.equal(timesCalled, 4)

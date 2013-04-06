@@ -6,8 +6,13 @@ var mime = require('mime')
  * @class Retry
  * @constructor
  * @param opts {Object} an object containing config parameters
- * @param knox {Object} knox library by default, or other deps for testing
- * @param mime {Object} mime lib by default, or other stuff for testing
+ *   `key`, `secret` and `bucket` are all requried.
+ *   `region` is the S3 region. It defaults to us-west-2
+ *   `maxRetries` is the number of times to retry before failing. It defaults to 3
+ *   `backoffInterval` is a multiplier used to calculate exponential backoff.
+ *   It defaults to 51.
+ * @param knox {Object} knox library by default, or mocked version for testing
+ * @param mime {Object} mime lib by default, or mocked version for testing
  */
 function Retry(opts, s3Lib, mimeLib) {
   // Inject deps for testing
@@ -22,7 +27,8 @@ function Retry(opts, s3Lib, mimeLib) {
   this.mime = mimeLib
 
 
-  // TODO: validate presence of these opts
+  validateRequiredOptions(opts)
+
   this.key = opts.key
   this.secret = opts.secret
   this.bucket = opts.bucket
@@ -35,8 +41,20 @@ function Retry(opts, s3Lib, mimeLib) {
     region: this.region
   })
 
-  this.maxRetries = opts.maxRetries || 10
+  this.maxRetries = opts.maxRetries || 3
   this.backoffInterval = opts.backoffInterval || 51
+}
+
+function validateRequiredOptions(opts) {
+  if (!opts.hasOwnProperty('key')) {
+    throw new Error("Missing required 'key' option from opts.")
+  }
+  else if (!opts.hasOwnProperty('secret')) {
+    throw new Error("Missing required 'secret' option from opts.")
+  }
+  else if (!opts.hasOwnProperty('bucket')) {
+    throw new Error("Missing required 'bucket' option from opts.")
+  }
 }
 
 Retry.prototype.calculateBackoff = function(numRetries) {
@@ -64,14 +82,36 @@ Retry.prototype.upload = function(sourcePath, destination, cb) {
       'Content-Length': file.length
     }
 
-    self.uploadWithRetries(headers, destination, file, cb)
+    self.uploadWithRetries(file, headers, destination, cb)
   })
 }
 
-Retry.prototype.uploadWithRetries = function(headers, data, destination, timesRetried, cb) {
+/**
+ * Upload a buffer with accompanying headers to s3. Recursively calls itself
+ * until `timesRetried` exceeds `this.maxRetries`.
+ *
+ * @param data {Buffer} data to put to S3
+ * @param headers {Object} headers to send with request to S3. Will set a default
+ * @param destination {String} path to put the buffer to S3
+ * @param timesRetried {Number} number of times this current upload has retried.
+ *   Defaults to 0 if not passed in, and will increment every time an upload fails.
+ * @param cb {Function} function(err) called when upload is done or has failed
+ *   too many times.
+ * `Content-Type` and `Content-Length` if not included.
+ */
+Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRetried, cb) {
   var self = this
   // prevent callback from being called twice
   var callbackCalled = false
+
+  // Set content type and length if they aren't included
+  headers = headers || {}
+  if (!headers['Content-Type']) {
+    headers['Content-Type'] = 'application/octet-stream'
+  }
+  if (headers['Content-Length'] == undefined) {
+    headers['Content-Length'] = data.length
+  }
 
   if (typeof timesRetried === 'function') {
     cb = timesRetried
@@ -89,8 +129,8 @@ Retry.prototype.uploadWithRetries = function(headers, data, destination, timesRe
     }
     else {
       setTimeout(self.uploadWithRetries.bind(self),
-      self.calculateBackoff(timesRetried), headers, data,
-      destination, timesRetried, cb)
+        self.calculateBackoff(timesRetried), data, headers, destination,
+        timesRetried, cb)
     }
   }
 
