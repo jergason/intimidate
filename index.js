@@ -104,6 +104,10 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
   // prevent callback from being called twice
   var callbackCalled = false
 
+  // sometimes knox failures will give EPIPE errors after sending a non-200
+  // status code, so we have to guard against recusing twice
+  var recursionScheduled = false
+
   // Set content type and length if they aren't included
   headers = headers || {}
   if (!headers['Content-Type']) {
@@ -115,35 +119,46 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
 
   if (typeof timesRetried === 'function') {
     cb = timesRetried
-    timesRetried = 0
+    // start at -1 so we can increment up to 0 on the first call
+    timesRetried = -1
   }
 
+  timesRetried++
 
   function endWithError(err) {
-    timesRetried++
-    if (timesRetried >= this.maxRetries) {
+    if (callbackCalled) {
+      return
+    }
+    if (timesRetried >= self.maxRetries) {
       if (!callbackCalled) {
         callbackCalled = true
-        return cb(err)
+        return cb(err, null, timesRetried)
       }
     }
     else {
+      if (recursionScheduled) {
+        return
+      }
+      recursionScheduled = true
       setTimeout(self.uploadWithRetries.bind(self),
         self.calculateBackoff(timesRetried), data, headers, destination,
         timesRetried, cb)
     }
   }
 
-  function endWithSuccess(res) {
-    // TODO: what if res finished but not successfully?
+  function endWithResponse(res) {
+    if (res.statusCode !== 200) {
+      return endWithError(new Error('Invalid status code: ' + res.statusCode))
+    }
+
     if (!callbackCalled) {
       callbackCalled = true
-      return cb()
+      return cb(null, res, timesRetried)
     }
   }
 
   var client = this.s3Client.put(destination, headers)
-  client.on('response', endWithSuccess)
+  client.on('response', endWithResponse)
   client.on('error', endWithError)
 
   client.end(data)

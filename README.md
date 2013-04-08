@@ -25,7 +25,7 @@ var client = new Intimidate({
   maxRetries: 5
 })
 
-client.upload('path/to/a/file.xml', 'destination/path/on/s3.xml', function(err) {
+client.upload('path/to/a/file.xml', 'destination/path/on/s3.xml', function(err, res) {
   if (err) {
     console.log('oh noes, all uploads failed! last error was', err)
   }
@@ -69,13 +69,15 @@ var s3Uploader = new Intimidate({
 
 * @param sourcePath {String} location of the file to upload on the fs
 * @param destination {String} path in s3 to upload file to
-* @param cb {Function} function(err) called when upload is done or has failed too many times
+* @param cb {Function} function(err, res) called when upload is done or has
+    failed too many times. `err` is the last error, and `res` is the reponse
+    object if the request succeeded
 
 
 Example:
 
 ```JavaScript
-client.upload('a_car.zip', 'uploaded_cars/car.zip', function(err) {
+client.upload('a_car.zip', 'uploaded_cars/car.zip', function(err, res) {
   if (err) {
     console.log('Dang, guess you can\'t upload a car.', err)
   }

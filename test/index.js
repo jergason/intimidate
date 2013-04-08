@@ -28,7 +28,6 @@ describe('Retry', function() {
 
   describe('upload', function() {
     // THIS IS SPARTA
-    var timesCalled = 0
     var mockKnox = {
       createClient: function() {
         return {
@@ -39,13 +38,7 @@ describe('Retry', function() {
                 this.eventHandlers[event] = cb
               },
               end: function(data) {
-                timesCalled++
-                if (timesCalled < 4) {
-                  this.eventHandlers['error']('AN ERROR')
-                }
-                else {
-                  this.eventHandlers['response']('A RESPONSE')
-                }
+                this.eventHandlers['error']('AN ERROR')
               }
             }
           }
@@ -53,11 +46,38 @@ describe('Retry', function() {
       }
     }
 
-    it('tries uploading to s3 until success or it gets the hose again', function(done) {
+    it('tries uploading to s3 until maxRetries tries or it gets the hose again', function(done) {
       var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, mockKnox)
-      client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err) {
+      client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res, timesRetried) {
+        assert(err)
+        assert(res == null)
+        assert.equal(timesRetried, 4)
+        done()
+      })
+    })
+
+    it('calls the callback with a response object if the request succeeds', function(done) {
+      var successKnox = {
+        createClient: function() {
+          return {
+            put: function(put, destination) {
+              return {
+                eventHandlers: {},
+                on: function(event, cb) {
+                  this.eventHandlers[event] = cb
+                },
+                end: function(data) {
+                  this.eventHandlers['response']({statusCode: 200})
+                }
+              }
+            }
+          }
+        }
+      }
+      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res) {
         assert.ifError(err)
-        assert.equal(timesCalled, 4)
+        assert(res)
         done()
       })
     })
