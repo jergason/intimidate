@@ -3,6 +3,9 @@
 intimidate is a node module to upload files to S3 with support for
 automatic retry and exponential backoff.
 
+It uses the excellent [knox](https://github.com/LearnBoost/knox) library to
+handle the heavy lifting.
+
 > When you need those uploads to back off, use *intimidate*™. - The Readme
 
 ## Installation
@@ -39,12 +42,14 @@ client.upload('path/to/a/file.xml', 'destination/path/on/s3.xml', function(err, 
 
 ### `Intimidate(opts)`
 
-Constructor function that takes the following opts:
+The constructor takes any opts that can be passed to
+[knox's](https://github.com/LearnBoost/knox) `createClient` function. Here are
+some important ones.
 
 * `key` - S3 api key. Required.
 * `secret` - S3 api secret. Required.
 * `bucket` - S3 bucket to upload to. Required.
-* `region` - S3 region to upload to. Defautls to `'us-west-2'`
+* `region` - S3 region to upload to. Defaults to `'us-west-2'`
 * `maxRetries` - the number of times to retry before failing. Defaults to 3.
 * `backoffInterval` a multiplier used to calculate exponential backoff. Larger
    numbers result in much larger backoff times after each failure. Defaults to 51.

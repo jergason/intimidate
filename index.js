@@ -34,12 +34,7 @@ function Retry(opts, s3Lib, mimeLib) {
   this.bucket = opts.bucket
   this.region = opts.region || 'us-west-2'
 
-  this.s3Client = this.knox.createClient({
-    key: this.key,
-    secret: this.secret,
-    bucket: this.bucket,
-    region: this.region
-  })
+  this.s3Client = this.knox.createClient(opts)
 
   this.maxRetries = opts.maxRetries || 3
   this.backoffInterval = opts.backoffInterval || 51
