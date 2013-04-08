@@ -72,9 +72,11 @@ var s3Uploader = new Intimidate({
 
  Upload a file at sourcePath with automatic retries and exponential backoff
 
-* @param sourcePath {String} location of the file to upload on the fs
-* @param destination {String} path in s3 to upload file to
-* @param cb {Function} function(err, res) called when upload is done or has
+Params:
+
+* `sourcePath` location of the file to upload on the fs
+* `destination` path in s3 to upload file to
+* `cb` function(err, res) called when upload is done or has
     failed too many times. `err` is the last error, and `res` is the reponse
     object if the request succeeded
 
@@ -88,6 +90,39 @@ client.upload('a_car.zip', 'uploaded_cars/car.zip', function(err, res) {
   }
   else {
     console.log('I uploaded a car.')
+  }
+})
+```
+
+### `uploadBuffer(buffer, headers, destination, cb)`
+
+Upload a buffer
+
+Params:
+
+* `buffer` buffer to upload
+* `headers` HTTP headers to set on request. `'Content-Length'` will default to
+   `buffer.length`, and `'Content-Type'` will default to
+   'application/octet-stream' if not provided.
+* `destination` path on S3 to put file
+* `cb` function(err, res) called when request completes or fails too many times
+
+
+Example:
+
+```JavaScript
+var data = new Buffer('Shall I compare thee to a summer/'s day?')
+var headers = {
+  'Content-Type': 'application/text',
+  'Content-Length': data.length
+}
+
+client.uploadBuffer(data, headers, 'poem_idea.txt', function(err, res) {
+  if (err) {
+    console.log('error uplaoding my sweet poem idea', err)
+  }
+  else {
+    console.log('my poem idea is successfully archived to s3')
   }
 })
 ```

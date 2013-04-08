@@ -26,28 +26,46 @@ describe('Retry', function() {
     })
   })
 
-  describe('upload', function() {
-    // THIS IS SPARTA
-    var mockKnox = {
-      createClient: function() {
-        return {
-          put: function(put, destination) {
-            return {
-              eventHandlers: {},
-              on: function(event, cb) {
-                this.eventHandlers[event] = cb
-              },
-              end: function(data) {
-                this.eventHandlers['error']('AN ERROR')
-              }
+  // THIS IS SPARTA
+  var failKnox = {
+    createClient: function() {
+      return {
+        put: function(put, destination) {
+          return {
+            eventHandlers: {},
+            on: function(event, cb) {
+              this.eventHandlers[event] = cb
+            },
+            end: function(data) {
+              this.eventHandlers['error']('AN ERROR')
             }
           }
         }
       }
     }
+  }
 
+  var successKnox = {
+    createClient: function() {
+      return {
+        put: function(put, destination) {
+          return {
+            eventHandlers: {},
+            on: function(event, cb) {
+              this.eventHandlers[event] = cb
+            },
+            end: function(data) {
+              this.eventHandlers['response']({statusCode: 200})
+            }
+          }
+        }
+      }
+    }
+  }
+
+  describe('upload', function() {
     it('tries uploading to s3 until maxRetries tries or it gets the hose again', function(done) {
-      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, mockKnox)
+      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, failKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res, timesRetried) {
         assert(err)
         assert(res == null)
@@ -57,25 +75,24 @@ describe('Retry', function() {
     })
 
     it('calls the callback with a response object if the request succeeds', function(done) {
-      var successKnox = {
-        createClient: function() {
-          return {
-            put: function(put, destination) {
-              return {
-                eventHandlers: {},
-                on: function(event, cb) {
-                  this.eventHandlers[event] = cb
-                },
-                end: function(data) {
-                  this.eventHandlers['response']({statusCode: 200})
-                }
-              }
-            }
-          }
-        }
-      }
       var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res) {
+        assert.ifError(err)
+        assert(res)
+        done()
+      })
+    })
+  })
+
+  describe('uploadBuffer', function() {
+    it('uploads a buffer', function(done) {
+      var data = new Buffer('Shall i compare thee to a summer\'s day?')
+      var headers =  {
+        'Content-Type': 'application/text'
+      }
+
+      var client = new Retry({key: 1, secret: 1, bucket: 1}, successKnox)
+      client.uploadBuffer(data, headers, 'poem.txt', function(err, res) {
         assert.ifError(err)
         assert(res)
         done()

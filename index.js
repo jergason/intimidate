@@ -82,17 +82,32 @@ Retry.prototype.upload = function(sourcePath, destination, cb) {
 }
 
 /**
+ * Upload a buffer with accompanying headers to S3.
+ *
+ * @param buffer {Buffer} buffer to put to s3
+ * @param headers {Object} headers. Will set default Content-Type and
+ *   Content-Length if none is provided.
+ * @param destination {String} path to put buffer to
+ * @param cb {Funtion} function(err, res) called when upload has succeeded
+ *   or failed too many times.
+ */
+Retry.prototype.uploadBuffer = function(buffer, headers, destination, cb) {
+  this.uploadWithRetries(buffer, headers, destination, cb)
+}
+
+/**
  * Upload a buffer with accompanying headers to s3. Recursively calls itself
  * until `timesRetried` exceeds `this.maxRetries`.
  *
+ * @private
  * @param data {Buffer} data to put to S3
  * @param headers {Object} headers to send with request to S3. Will set a default
+ *   Content-Length and Content-Type if none is provided.
  * @param destination {String} path to put the buffer to S3
  * @param timesRetried {Number} number of times this current upload has retried.
  *   Defaults to 0 if not passed in, and will increment every time an upload fails.
- * @param cb {Function} function(err) called when upload is done or has failed
+ * @param cb {Function} function(err, res) called when upload is done or has failed
  *   too many times.
- * `Content-Type` and `Content-Length` if not included.
  */
 Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRetried, cb) {
   var self = this
