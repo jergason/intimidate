@@ -1,7 +1,6 @@
 var fs = require('fs')
 var knox = require('knox')
 var mime = require('mime')
-var async = require('async')
 
 /**
  * @class Retry
