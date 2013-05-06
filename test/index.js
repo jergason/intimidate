@@ -112,8 +112,7 @@ describe('Retry', function() {
       }];
 
       client.uploadFiles(files, function(err, res) {
-        assert(err)
-        assert(err.length == 0)
+        assert.ifError(err)
         assert(res)
         assert(res.length == files.length)
         done()
@@ -131,8 +130,7 @@ describe('Retry', function() {
 
       client.uploadFiles(files, function(err, res) {
         assert(err)
-        assert(err.length == 1)
-        assert(res.length == 1)
+        assert(res)
         done()
       })
     })
