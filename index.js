@@ -188,9 +188,15 @@ Retry.prototype.uploadFiles = function(files, cb) {
 
   function done(err, res) {
     count += 1;
-    errors.push(err);
-    results.push(res);
-    if(count == files.length) {
+    if (err) {
+      errors.push(err);
+    }
+
+    if (res) {
+      results.push(res);
+    }
+
+    if (count == files.length) {
       cb(errors, results);
     }
   }

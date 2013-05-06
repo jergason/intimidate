@@ -113,7 +113,7 @@ describe('Retry', function() {
 
       client.uploadFiles(files, function(err, res) {
         assert(err)
-        assert(err.length == files.length)
+        assert(err.length == 0)
         assert(res)
         assert(res.length == files.length)
         done()
@@ -125,14 +125,14 @@ describe('Retry', function() {
         src: path.join(__dirname, 'doesNotExist.txt'),
         dest: 'destination'
       },{
-        src: path.join(__dirname, 'doesNotExist.txt'),
+        src: path.join(__dirname, 'fakeFile.txt'),
         dest: 'another_destination'
       }];
 
       client.uploadFiles(files, function(err, res) {
         assert(err)
-        assert(err.length == files.length)
-        assert(res.length == files.length)
+        assert(err.length == 1)
+        assert(res.length == 1)
         done()
       })
     })
