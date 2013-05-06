@@ -99,4 +99,40 @@ describe('Retry', function() {
       })
     })
   })
+
+  describe('uploadFiles', function() {
+    it('calls the callback with a array response object if the request succeeds', function(done) {
+      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var files = [{
+        src: path.join(__dirname, 'fakeFile.txt'),
+        dest: 'destination'
+      },{
+        src: path.join(__dirname, 'fakeFile.txt'),
+        dest: 'another_destination'
+      }];
+
+      client.uploadFiles(files, function(err, res) {
+        assert.ifError(err)
+        assert(res)
+        assert(res.length == files.length)
+        done()
+      })
+    })
+    it('calls the callback with the first error ', function(done) {
+      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var files = [{
+        src: path.join(__dirname, 'doesNotExist.txt'),
+        dest: 'destination'
+      },{
+        src: path.join(__dirname, 'fakeFile.txt'),
+        dest: 'another_destination'
+      }];
+
+      client.uploadFiles(files, function(err, res) {
+        assert(err)
+        assert(res)
+        done()
+      })
+    })
+  })
 })

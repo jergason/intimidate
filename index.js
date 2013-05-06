@@ -1,6 +1,7 @@
 var fs = require('fs')
 var knox = require('knox')
 var mime = require('mime')
+var waitress = require('waitress')
 
 /**
  * @class Retry
@@ -172,6 +173,21 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
   client.on('error', endWithError)
 
   client.end(data)
+}
+
+/**
+ * Upload a file at sourcePath with automatic retries and exponential backoff
+ *
+ * @param files {Object} {src: /path, dest: /path} location and destination of the file to upload on the fs
+ * @param cb {Function} function(err) called when all uploads are done or have failed too many times
+ */
+Retry.prototype.uploadFiles = function(files, cb) {
+  var self = this
+  var done = waitress(files.length, cb);
+
+  files.forEach(function(file) {
+    self.upload(file.src, file.dest, done);
+  });
 }
 
 module.exports = Retry
