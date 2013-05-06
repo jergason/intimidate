@@ -126,3 +126,30 @@ client.uploadBuffer(data, headers, 'poem_idea.txt', function(err, res) {
   }
 })
 ```
+
+### `uploadFiles(files, cb)`
+
+Upload an array of files. The callback will be called when they all upload
+successfully, or when at least one of the uploads has failed.
+
+Params:
+
+* `files` Array of `{src: 'some_path.file', dest: 'some_uploaded_path.file'}`
+  file object to be uploaded.
+* `cb` `function(err, res)` that will be called when upload is complete or
+  one of the files has failed to upload.
+
+Example:
+
+
+```JavaScript
+var files = [{src: 'hurp.txt', dest: 'durp.txt'}, {src: 'foo.txt', dest: 'foo.txt'}]
+client.uploadFiles(files, function(err, res) {
+  if (err) {
+    console.error('error uploading one file', err)
+  }
+  else {
+    console.log('hooray, successfully uploaded all files')
+  }
+})
+```
