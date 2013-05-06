@@ -1,7 +1,7 @@
 var fs = require('fs')
 var knox = require('knox')
 var mime = require('mime')
-var waitress = require('waitress')
+var async = require('async')
 
 /**
  * @class Retry
@@ -183,13 +183,22 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
  */
 Retry.prototype.uploadFiles = function(files, cb) {
   var self = this
+  var errors = []
+  var results = [];
+  var count = 0;
 
-  var done = waitress(files.length, cb);
+  function done(err, res) {
+    count += 1;
+    errors.push(err);
+    results.push(res);
+    if(count == files.length) {
+      cb(errors, results);
+    }
+  }
 
   files.forEach(function(file) {
     self.upload(file.src, file.dest, done);
   });
-
 }
 
 module.exports = Retry
