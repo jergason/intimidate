@@ -2,6 +2,7 @@ var fs = require('fs')
 var knox = require('knox')
 var mime = require('mime')
 var waitress = require('waitress')
+var Utils = require('./utils')
 
 /**
  * @class Retry
@@ -65,18 +66,23 @@ Retry.prototype.calculateBackoff = function(numRetries) {
  * @param destination {String} path in s3 to upload file to
  * @param cb {Function} function(err) called when upload is done or has failed too many times
  */
-Retry.prototype.upload = function(sourcePath, destination, cb) {
+Retry.prototype.upload = function(sourcePath, destination, headers, cb) {
   var self = this
+  
+  if ('function' == typeof headers) {
+    cb = headers
+    headers = {}
+  }
 
   fs.readFile(sourcePath, function(err, file) {
     if (err) {
       return cb(err)
     }
 
-    var headers = {
+    headers = Utils.merge({
       'Content-Type': self.mime.lookup(sourcePath),
       'Content-Length': file.length
-    }
+    }, headers)
 
     self.uploadWithRetries(file, headers, destination, cb)
   })

@@ -64,7 +64,7 @@ describe('Retry', function() {
   }
 
   describe('upload', function() {
-    it('tries uploading to s3 until maxRetries tries or it gets the hose again', function(done) {
+    it('tries uploading to s3 until maxRetries tries or it gets the hose again: not passing headers', function(done) {
       var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, failKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res, timesRetried) {
         assert(err)
@@ -74,9 +74,30 @@ describe('Retry', function() {
       })
     })
 
-    it('calls the callback with a response object if the request succeeds', function(done) {
+    it('tries uploading to s3 until maxRetries tries or it gets the hose again: passing headers', function(done) {
+      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, failKnox)
+      var headers = { 'Content-Type': 'application/text' }
+      client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', headers, function(err, res, timesRetried) {
+        assert(err)
+        assert(res == null)
+        assert.equal(timesRetried, 4)
+        done()
+      })
+    })
+
+    it('calls the callback with a response object if the request succeeds: not passing headers', function(done) {
       var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res) {
+        assert.ifError(err)
+        assert(res)
+        done()
+      })
+    })
+
+    it('calls the callback with a response object if the request succeeds: passing headers', function(done) {
+      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var headers = { 'Content-Type': 'application/text' }
+      client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', headers, function(err, res) {
         assert.ifError(err)
         assert(res)
         done()
