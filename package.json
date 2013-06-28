@@ -1,12 +1,15 @@
 {
   "name": "intimidate",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Upload files to s3 with exponential backoff",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha test"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jergason/intimidate.git"
+  },
   "keywords": [
     "s3",
     "uploads",
