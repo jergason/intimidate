@@ -58,7 +58,7 @@ Example:
 
 ```JavaScript
 var Intimidate = require('intimidate')
-var s3Uploader = new Intimidate({
+var client = new Intimidate({
   key: 'love',
   secret: 'a sneaky secret',
   bucket: 'kicked',
