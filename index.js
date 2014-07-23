@@ -63,10 +63,16 @@ Retry.prototype.calculateBackoff = function(numRetries) {
  *
  * @param sourcePath {String} location of the file to upload on the fs
  * @param destination {String} path in s3 to upload file to
+ * @param headers {Object} (optional) custom headers to pass around.
  * @param cb {Function} function(err) called when upload is done or has failed too many times
  */
-Retry.prototype.upload = function(sourcePath, destination, cb) {
+Retry.prototype.upload = function(sourcePath, destination, _headers, cb) {
   var self = this
+
+  if(typeof _headers === 'function' && typeof cb === 'undefined') {
+    cb        = _headers;
+    _headers  = {};
+  }
 
   fs.readFile(sourcePath, function(err, file) {
     if (err) {
@@ -76,6 +82,14 @@ Retry.prototype.upload = function(sourcePath, destination, cb) {
     var headers = {
       'Content-Type': self.mime.lookup(sourcePath),
       'Content-Length': file.length
+    }
+
+    // Add any properties from _headers to headers.
+    // Don't override Content-Type and Content-Lenght
+    for(var prop in _headers) {
+      if(_headers.hasOwnProperty(prop) && prop.toLowerCase() != 'content-type' && prop.toLowerCase() != 'content-length') {
+        headers[prop] = _headers[prop];
+      }
     }
 
     self.uploadWithRetries(file, headers, destination, cb)
@@ -178,7 +192,7 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
 /**
  * Upload a file at sourcePath with automatic retries and exponential backoff
  *
- * @param files {Object} {src: /path, dest: /path} location and destination of the file to upload on the fs
+ * @param files {Object} { src: /path, dest: /path, headers:{} } location, destination and headers of the file to upload on the fs
  * @param cb {Function} function(err) called when all uploads are done or have failed too many times
  */
 Retry.prototype.uploadFiles = function(files, cb) {
@@ -186,7 +200,11 @@ Retry.prototype.uploadFiles = function(files, cb) {
   var done = waitress(files.length, cb);
 
   files.forEach(function(file) {
-    self.upload(file.src, file.dest, done);
+    if(typeof file.headers === 'object' && file.headers !== null) {
+      self.upload(file.src, file.dest, file.headers, done);
+    } else {
+      self.upload(file.src, file.dest, done);
+    }
   });
 }
 

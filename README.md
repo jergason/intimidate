@@ -76,6 +76,7 @@ Params:
 
 * `sourcePath` location of the file to upload on the fs
 * `destination` path in s3 to upload file to
+* `headers` (optional) object with any custom headers. `Content-Length` and `Content-Type` are determined by Intimidate automatically, and cannot be overwritten.
 * `cb` function(err, res) called when upload is done or has
     failed too many times. `err` is the last error, and `res` is the reponse
     object if the request succeeded
@@ -84,7 +85,7 @@ Params:
 Example:
 
 ```JavaScript
-client.upload('a_car.zip', 'uploaded_cars/car.zip', function(err, res) {
+client.upload('a_car.zip', 'uploaded_cars/car.zip', { 'x-amz-acl': 'public-read' }, function(err, res) {
   if (err) {
     console.log('Dang, guess you can\'t upload a car.', err)
   }
@@ -134,8 +135,8 @@ successfully, or when at least one of the uploads has failed.
 
 Params:
 
-* `files` Array of `{src: 'some_path.file', dest: 'some_uploaded_path.file'}`
-  file object to be uploaded.
+* `files` Array of `{src: 'some_path.file', dest: 'some_uploaded_path.file', headers: { 'x-amz-acl': 'public-read' } }`
+  file object to be uploaded. Headers are optional.
 * `cb` `function(err, res)` that will be called when upload is complete or
   one of the files has failed to upload.
 
@@ -143,7 +144,7 @@ Example:
 
 
 ```JavaScript
-var files = [{src: 'hurp.txt', dest: 'durp.txt'}, {src: 'foo.txt', dest: 'foo.txt'}]
+var files = [{src: 'hurp.txt', dest: 'durp.txt'}, {src: 'foo.txt', dest: 'foo.txt', headers: { 'x-amz-acl': 'public-read' } }]
 client.uploadFiles(files, function(err, res) {
   if (err) {
     console.error('error uploading one file', err)
