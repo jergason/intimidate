@@ -63,15 +63,15 @@ Retry.prototype.calculateBackoff = function(numRetries) {
  *
  * @param sourcePath {String} location of the file to upload on the fs
  * @param destination {String} path in s3 to upload file to
- * @param headers {Object} (optional) custom headers to pass around.
+ * @param _headers {Object} (optional) custom headers to pass around.
  * @param cb {Function} function(err) called when upload is done or has failed too many times
  */
 Retry.prototype.upload = function(sourcePath, destination, _headers, cb) {
   var self = this
 
-  if(typeof _headers === 'function' && typeof cb === 'undefined') {
-    cb        = _headers;
-    _headers  = {};
+  if (typeof _headers === 'function' && typeof cb === 'undefined') {
+    cb = _headers;
+    _headers = {};
   }
 
   fs.readFile(sourcePath, function(err, file) {
@@ -85,9 +85,9 @@ Retry.prototype.upload = function(sourcePath, destination, _headers, cb) {
     }
 
     // Add any properties from _headers to headers.
-    // Don't override Content-Type and Content-Lenght
-    for(var prop in _headers) {
-      if(_headers.hasOwnProperty(prop) && prop.toLowerCase() != 'content-type' && prop.toLowerCase() != 'content-length') {
+    // Don't override Content-Type and Content-Length
+    for (var prop in _headers) {
+      if (_headers.hasOwnProperty(prop) && prop.toLowerCase() != 'content-type' && prop.toLowerCase() != 'content-length') {
         headers[prop] = _headers[prop];
       }
     }
@@ -135,10 +135,10 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
 
   // Set content type and length if they aren't included
   headers = headers || {}
-  if (!headers['Content-Type']) {
+  if (!(headers['Content-Type'] || headers['content-type'])) {
     headers['Content-Type'] = 'application/octet-stream'
   }
-  if (headers['Content-Length'] == undefined) {
+  if (headers['Content-Length'] == undefined || headers['content-length'] == undefined) {
     headers['Content-Length'] = data.length
   }
 
