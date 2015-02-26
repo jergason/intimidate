@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 var assert = require('assert')
 var path = require('path')
 var Retry = require('../index')
@@ -74,6 +75,17 @@ describe('Retry', function() {
       })
     })
 
+    it('tries uploading to s3 until maxRetries tries or it gets the hose again: passing headers', function(done) {
+      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries: 4 }, failKnox)
+      var headers = { 'Content-Type': 'application/text' }
+      client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', headers, function(err, res, timesRetried) {
+        assert(err)
+        assert(res == null)
+        assert.equal(timesRetried, 4)
+        done()
+      })
+    })
+
     it('calls the callback with a response object if the request succeeds', function(done) {
       var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res) {
@@ -84,10 +96,20 @@ describe('Retry', function() {
     })
   })
 
+  it('calls the callback with a response object if the request succeeds: passing headers', function(done) {
+    var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+    var headers = { 'Content-Type': 'application/text' }
+    client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', headers, function(err, res) {
+      assert.ifError(err)
+      assert(res)
+      done()
+    })
+  })
+
   describe('uploadBuffer', function() {
     it('uploads a buffer', function(done) {
       var data = new Buffer('Shall i compare thee to a summer\'s day?')
-      var headers =  {
+      var headers = {
         'Content-Type': 'application/text'
       }
 
