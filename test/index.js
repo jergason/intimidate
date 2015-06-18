@@ -18,6 +18,12 @@ describe('Retry', function() {
     })
   })
 
+  it('does not throw an error if alternative options are passed in', function () {
+    assert.doesNotThrow(function() {
+      var client = new Retry({accessKeyId: 1, secretAccessKey: 1, bucket: 1}, noopKnox)
+    })
+  })
+
   describe('calculateBackoff', function() {
     it('returns a larger backoff for larger numbers of retries', function() {
       var client = new Retry({key: 1, secret: 1, bucket: 1}, noopKnox)
