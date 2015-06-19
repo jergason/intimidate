@@ -1,32 +1,32 @@
 /* eslint-env mocha */
 var assert = require('assert')
 var path = require('path')
-var Retry = require('../index')
+var Intimidate = require('../index')
 
-describe('Retry', function() {
+describe('Intimidate', function() {
   var noopKnox = {createClient: function() {}}
 
   it('throws an error if required options are not passed in', function() {
     assert.throws(function () {
-      var client = new Retry({})
+      var client = new Intimidate({})
     })
   })
 
   it('does not throw an error if required options are passed in', function () {
     assert.doesNotThrow(function() {
-      var client = new Retry({key: 1, secret: 1, bucket: 1}, noopKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1}, noopKnox)
     })
   })
 
   it('does not throw an error if alternative options are passed in', function () {
     assert.doesNotThrow(function() {
-      var client = new Retry({accessKeyId: 1, secretAccessKey: 1, bucket: 1}, noopKnox)
+      var client = new Intimidate({accessKeyId: 1, secretAccessKey: 1, bucket: 1}, noopKnox)
     })
   })
 
   describe('calculateBackoff', function() {
     it('returns a larger backoff for larger numbers of retries', function() {
-      var client = new Retry({key: 1, secret: 1, bucket: 1}, noopKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1}, noopKnox)
       var lessRetriesBackoff = client.calculateBackoff(1)
       var moreRetriesBackoff = client.calculateBackoff(10)
       assert(moreRetriesBackoff > lessRetriesBackoff)
@@ -72,7 +72,7 @@ describe('Retry', function() {
 
   describe('upload', function() {
     it('tries uploading to s3 until maxRetries tries or it gets the hose again', function(done) {
-      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, failKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries:4 }, failKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res, timesRetried) {
         assert(err)
         assert(res == null)
@@ -82,7 +82,7 @@ describe('Retry', function() {
     })
 
     it('tries uploading to s3 until maxRetries tries or it gets the hose again: passing headers', function(done) {
-      var client = new Retry({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries: 4 }, failKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1, backoffInterval: 1, maxRetries: 4 }, failKnox)
       var headers = { 'Content-Type': 'application/text' }
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', headers, function(err, res, timesRetried) {
         assert(err)
@@ -93,7 +93,7 @@ describe('Retry', function() {
     })
 
     it('calls the callback with a response object if the request succeeds', function(done) {
-      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1 }, successKnox)
       client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', function(err, res) {
         assert.ifError(err)
         assert(res)
@@ -103,7 +103,7 @@ describe('Retry', function() {
   })
 
   it('calls the callback with a response object if the request succeeds: passing headers', function(done) {
-    var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+    var client = new Intimidate({key: 1, secret: 1, bucket: 1 }, successKnox)
     var headers = { 'Content-Type': 'application/text' }
     client.upload(path.join(__dirname, 'fakeFile.txt'), 'destination', headers, function(err, res) {
       assert.ifError(err)
@@ -119,7 +119,7 @@ describe('Retry', function() {
         'Content-Type': 'application/text'
       }
 
-      var client = new Retry({key: 1, secret: 1, bucket: 1}, successKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1}, successKnox)
       client.uploadBuffer(data, headers, 'poem.txt', function(err, res) {
         assert.ifError(err)
         assert(res)
@@ -130,7 +130,7 @@ describe('Retry', function() {
 
   describe('uploadFiles', function() {
     it('calls the callback with a array response object if the request succeeds', function(done) {
-      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1 }, successKnox)
       var files = [{
         src: path.join(__dirname, 'fakeFile.txt'),
         dest: 'destination'
@@ -147,7 +147,7 @@ describe('Retry', function() {
       })
     })
     it('calls the callback with the first error ', function(done) {
-      var client = new Retry({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1 }, successKnox)
       var files = [{
         src: path.join(__dirname, 'doesNotExist.txt'),
         dest: 'destination'
