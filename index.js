@@ -30,8 +30,8 @@ function Retry(opts, s3Lib, mimeLib) {
 
   validateRequiredOptions(opts)
 
-  this.key = opts.key
-  this.secret = opts.secret
+  this.key = opts.key || opts.accessKeyId
+  this.secret = opts.secret || opts.secretAccessKey
   this.bucket = opts.bucket
   this.region = opts.region || 'us-west-2'
 
@@ -42,10 +42,10 @@ function Retry(opts, s3Lib, mimeLib) {
 }
 
 function validateRequiredOptions(opts) {
-  if (!opts.hasOwnProperty('key')) {
+  if (!opts.hasOwnProperty('key') && !opts.hasOwnProperty('accessKeyId')) {
     throw new Error("Missing required 'key' option from opts.")
   }
-  else if (!opts.hasOwnProperty('secret')) {
+  else if (!opts.hasOwnProperty('secret') && !opts.hasOwnProperty('secretAccessKey')) {
     throw new Error("Missing required 'secret' option from opts.")
   }
   else if (!opts.hasOwnProperty('bucket')) {
