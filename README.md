@@ -46,8 +46,8 @@ The constructor takes any opts that can be passed to
 [knox's](https://github.com/LearnBoost/knox) `createClient` function. Here are
 some important ones.
 
-* `key` - S3 api key. Required.
-* `secret` - S3 api secret. Required.
+* `key` or `accessKeyId`  - S3 api key. Required.
+* `secret` or `secretAccessKey` - S3 api secret. Required.
 * `bucket` - S3 bucket to upload to. Required.
 * `region` - S3 region to upload to. Defaults to `'us-west-2'`
 * `maxRetries` - the number of times to retry before failing. Defaults to 3.
