@@ -3,7 +3,7 @@
 intimidate is a node module to upload files to S3 with support for
 automatic retry and exponential backoff.
 
-It uses the excellent [knox](https://github.com/LearnBoost/knox) library to
+It uses the excellent [knox](https://github.com/Automattic/knox) library to
 handle the heavy lifting.
 
 > When you need those uploads to back off, use *intimidate*™. - The Readme
@@ -120,7 +120,7 @@ var headers = {
 
 client.uploadBuffer(data, headers, 'poem_idea.txt', function(err, res) {
   if (err) {
-    console.log('error uplaoding my sweet poem idea', err)
+    console.log('error uploading my sweet poem idea', err)
   }
   else {
     console.log('my poem idea is successfully archived to s3')
@@ -185,7 +185,7 @@ var buffers = [
 
 client.uploadBuffers(buffers, function(err, res) {
   if (err) {
-    console.log('error uploding one buffer', err)
+    console.log('error uploading one buffer', err)
   }
   else {
     console.log('hooray, successfully uploaded all buffers')
