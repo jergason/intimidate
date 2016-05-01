@@ -137,7 +137,7 @@ describe('Intimidate', function() {
       },{
         src: path.join(__dirname, 'fakeFile.txt'),
         dest: 'another_destination'
-      }];
+      }]
 
       client.uploadFiles(files, function(err, res) {
         assert.ifError(err)
@@ -154,7 +154,7 @@ describe('Intimidate', function() {
       },{
         src: path.join(__dirname, 'fakeFile.txt'),
         dest: 'another_destination'
-      }];
+      }]
 
       client.uploadFiles(files, function(err, res) {
         assert(err)
@@ -173,7 +173,7 @@ describe('Intimidate', function() {
       },{
         data: new Buffer('When you need those uploads to back off, use intimidate'),
         dest: 'another_destination'
-      }];
+      }]
 
       client.uploadBuffers(buffers, function(err, res) {
         assert.ifError(err)
