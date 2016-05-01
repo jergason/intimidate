@@ -112,7 +112,7 @@ Params:
 Example:
 
 ```JavaScript
-var data = new Buffer('Shall I compare thee to a summer/'s day?')
+var data = new Buffer('Shall I compare thee to a summer\'s day?')
 var headers = {
   'Content-Type': 'application/text',
   'Content-Length': data.length
@@ -151,6 +151,44 @@ client.uploadFiles(files, function(err, res) {
   }
   else {
     console.log('hooray, successfully uploaded all files')
+  }
+})
+```
+
+### `uploadBuffers(buffers, cb)`
+
+Upload an array of buffers. The callback will be called when they all upload
+successfully, or when at least one of the uploads has failed.
+
+Params:
+
+* `buffers` Array of `{data: Buffer, headers: { 'x-amz-acl': 'public-read' }, dest: 'some_uploaded_path.file' }`
+* `cb` `function(err, res)` that will be called when upload is complete or
+  one of the files has failed to upload.
+
+
+Example:
+
+```JavaScript
+var buffers = [
+  {
+    data: new Buffer('Shall I compare thee to a summer\'s day?'),
+    headers: { 'x-amz-acl': 'public-read' }
+    dest: 'some_uploaded_path1.file'
+  },
+  {
+    data: new Buffer('When you need those uploads to back off, use intimidate'),
+    headers: { 'x-amz-acl': 'public-read' }
+    dest: 'some_uploaded_path2.file'
+  }
+]
+
+client.uploadBuffers(buffers, function(err, res) {
+  if (err) {
+    console.log('error uploding one buffer', err)
+  }
+  else {
+    console.log('hooray, successfully uploaded all buffers')
   }
 })
 ```
