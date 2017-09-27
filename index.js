@@ -70,8 +70,8 @@ Retry.prototype.upload = function(sourcePath, destination, _headers, cb) {
   var self = this
 
   if (typeof _headers === 'function' && typeof cb === 'undefined') {
-    cb = _headers;
-    _headers = {};
+    cb = _headers
+    _headers = {}
   }
 
   fs.readFile(sourcePath, function(err, file) {
@@ -88,7 +88,7 @@ Retry.prototype.upload = function(sourcePath, destination, _headers, cb) {
     // Don't override Content-Type and Content-Length
     for (var prop in _headers) {
       if (_headers.hasOwnProperty(prop) && prop.toLowerCase() != 'content-type' && prop.toLowerCase() != 'content-length') {
-        headers[prop] = _headers[prop];
+        headers[prop] = _headers[prop]
       }
     }
 
@@ -100,14 +100,44 @@ Retry.prototype.upload = function(sourcePath, destination, _headers, cb) {
  * Upload a buffer with accompanying headers to S3.
  *
  * @param buffer {Buffer} buffer to put to s3
- * @param headers {Object} headers. Will set default Content-Type and
+ * @param _headers {Object} headers. Will set default Content-Type and
  *   Content-Length if none is provided.
  * @param destination {String} path to put buffer to
  * @param cb {Funtion} function(err, res) called when upload has succeeded
  *   or failed too many times.
  */
-Retry.prototype.uploadBuffer = function(buffer, headers, destination, cb) {
+Retry.prototype.uploadBuffer = function(buffer, _headers, destination, cb) {
+  var headers = {}
+
+  for (var prop in _headers) {
+    if (_headers.hasOwnProperty(prop)) {
+      headers[prop] = _headers[prop]
+    }
+  }
+
   this.uploadWithRetries(buffer, headers, destination, cb)
+}
+
+/**
+ * Upload buffers with accompanying headers to S3.
+ *
+ * @param buffers {Array} buffers to put to s3
+ * @param headers {Object} { data: {Buffer}, headers: {}}, dest: /path } content, headers and destination of the buffer to upload
+ * @param destination {String} path to put buffer to
+ * @param cb {Funtion} function(err, res) called when upload has succeeded
+ *   or failed too many times.
+ */
+Retry.prototype.uploadBuffers = function(buffers, cb) {
+  var self = this
+  var done = waitress(buffers.length, cb)
+
+  buffers.forEach(function(buffer) {
+    if (typeof buffer.headers !== 'object' || buffer.headers === null) {
+      buffer.headers = {}
+    }
+
+    self.uploadBuffer(buffer.data, buffer.headers, buffer.dest, done)
+  })
 }
 
 /**
@@ -197,15 +227,15 @@ Retry.prototype.uploadWithRetries = function(data, headers, destination, timesRe
  */
 Retry.prototype.uploadFiles = function(files, cb) {
   var self = this
-  var done = waitress(files.length, cb);
+  var done = waitress(files.length, cb)
 
   files.forEach(function(file) {
     if(typeof file.headers === 'object' && file.headers !== null) {
-      self.upload(file.src, file.dest, file.headers, done);
+      self.upload(file.src, file.dest, file.headers, done)
     } else {
-      self.upload(file.src, file.dest, done);
+      self.upload(file.src, file.dest, done)
     }
-  });
+  })
 }
 
 module.exports = Retry

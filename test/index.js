@@ -137,7 +137,7 @@ describe('Intimidate', function() {
       },{
         src: path.join(__dirname, 'fakeFile.txt'),
         dest: 'another_destination'
-      }];
+      }]
 
       client.uploadFiles(files, function(err, res) {
         assert.ifError(err)
@@ -154,11 +154,31 @@ describe('Intimidate', function() {
       },{
         src: path.join(__dirname, 'fakeFile.txt'),
         dest: 'another_destination'
-      }];
+      }]
 
       client.uploadFiles(files, function(err, res) {
         assert(err)
         assert(res)
+        done()
+      })
+    })
+  })
+
+  describe('uploadBuffers', function() {
+    it('calls the callback with a array response object if the request succeeds', function(done) {
+      var client = new Intimidate({key: 1, secret: 1, bucket: 1 }, successKnox)
+      var buffers = [{
+        data: new Buffer('Shall I compare thee to a summer\'s day?'),
+        dest: 'destination'
+      },{
+        data: new Buffer('When you need those uploads to back off, use intimidate'),
+        dest: 'another_destination'
+      }]
+
+      client.uploadBuffers(buffers, function(err, res) {
+        assert.ifError(err)
+        assert(res)
+        assert(res.length == buffers.length)
         done()
       })
     })
